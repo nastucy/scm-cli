@@ -1,0 +1,33 @@
+{
+  "name": "scm-cli",
+  "version": "0.0.4",
+  "description": "项目模板生成",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "scm-cli": "./bin/scm-cli"
+  },
+  "author": "chenyan",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "commander": "^2.19.0",
+    "fuzzy": "^0.1.3",
+    "handlebars": "^4.1.1",
+    "inquirer": "^6.2.2",
+    "inquirer-autocomplete-prompt": "^1.0.1",
+    "log-symbols": "^2.2.0"
+  },
+  "devDependencies": {},
+  "bundledDependencies": [
+    "chalk",
+    "commander",
+    "handlebars",
+    "inquirer",
+    "log-symbols",
+    "inquirer-autocomplete-prompt",
+    "fuzzy"
+  ]
+}

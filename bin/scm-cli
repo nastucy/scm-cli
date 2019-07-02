@@ -1,0 +1,116 @@
+#!/usr/bin/env node
+//这种用法是为了防止操作系统用户没有将node装在默认的/usr/bin路径里。当系统看到这一行的时候，
+//首先会到env设置里查找node的安装路径，再调用对应路径下的解释器程序完成操作。
+// 定义脚手架的文件路径
+const fs = require('fs');
+const program = require('commander');
+const handlebars = require('handlebars');
+const inquirer = require('inquirer');
+const chalk = require('chalk');
+const symbols = require('log-symbols');
+const tem = require('../commond/index');
+var fuzzy = require('fuzzy');
+inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'))
+let contents = [],nodeContents=[];
+fs.readdir('./src/pages', function (err, files) {
+    if (err) {
+        return console.log(chalk.red('目录不存在'))
+    }
+    for (i = 0; i < files.length; i++) {
+        if (files[i].indexOf('.') == -1) {
+            contents.push(files[i])
+        }
+    }
+})
+function searchContent(answers, input) {
+    input = input || '';
+    return new Promise(function(resolve) {
+      setTimeout(function() {
+        var contentsResult = fuzzy.filter(input, contents);
+        resolve(
+            contentsResult.map(function(el) {
+            return el.original;
+          })
+        );
+      },30);
+    });
+  }
+function nodeContent(answers, input) {
+    fs.readdir(`./src/pages/${answers.node}`, function (err, files) {
+        if (err) {
+            return console.log(chalk.red('目录不存在'));
+        }
+        for (i = 0; i < files.length; i++) {
+            if (files[i].indexOf('.') == -1) {
+                nodeContents.push(files[i])
+            }
+        }
+    })
+    input = input || '';
+    return new Promise(function(resolve) {
+      setTimeout(function() {
+        var contentsResult = fuzzy.filter(input, nodeContents);
+        resolve(
+            contentsResult.map(function(el) {
+            return el.original;
+          })
+        );
+      },30);
+    });
+  }
+promptList=()=>{
+    let list = [
+        {
+            type: 'input',
+            name: 'module_name',
+            message: '请输入模块名称',
+            validate: (input) => {
+                if (!input || !/[a-zA-Z]/.test(input)) {
+                    console.log(chalk.red('模块名称为必输项且只能为英文'));
+                    return false;
+                }
+                return true;
+            }
+        },
+        {
+            type: 'input',
+            name: 'node_name',
+            message: '请输入节点名称',
+            suffix: '(以-分割)',
+            validate: (input) => {
+                if (!input || !/[a-zA-Z]/.test(input)) {
+                    console.log(chalk.red('节点名称为必输项且只能为英文'));
+                    return false;
+                }
+                return true;
+            }
+        },
+        {
+            type: 'autocomplete',
+            name: 'node',
+            message: '请选择需要复制的模块文件夹',
+            source: searchContent,
+        },
+        {
+            type: 'autocomplete',
+            name: 'template',
+            message: '请选择需要复制的节点文件夹',
+            source: nodeContent,
+        }
+    ];
+    return list;
+}
+program.version('0.0.4', '-v, --version')
+    .command('init')
+    .action(() => {
+        inquirer.prompt(promptList()).then((answers) => {
+            tem.create(answers)
+            // console.log(answers)
+        })
+    })
+
+program.parse(process.argv);
+
+if (!program.args.length) {
+    program.help()
+}
